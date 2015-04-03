@@ -5,6 +5,8 @@ import net.zburak.poc.domain.User;
 import net.zburak.poc.tools.IdGenerator;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,8 @@ import java.util.List;
  */
 @Service
 public class UserServiceImpl implements UserService {
+
+    final static Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     private UserRepository userRepository;
 
@@ -66,6 +70,7 @@ public class UserServiceImpl implements UserService {
     public User save(User entity) {
         User user = userRepository.findByUsernameOrPhone(entity.getUsername(), entity.getPhone());
         if(user != null && StringUtils.isNotEmpty(user.getId())){
+            logger.error("User can not be saved");
             throw new RuntimeException("Unique Constraint");
         }
         entity.setId(idGenerator.generate());
@@ -75,6 +80,7 @@ public class UserServiceImpl implements UserService {
     @Override
      public User update(User entity) {
         if(userRepository.exists(entity.getId())){
+            logger.info("User is updated");
             return userRepository.save(entity);
         } else{
             throw new RuntimeException("Record Not Found");
